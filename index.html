@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Page Title</title>
+</head>
+
+<link rel="stylesheet" href="content/bootstrap/bootstrap.min.css">
+
+<style>
+	.is-invalid-check {
+		color: #dc3545;
+	}
+</style>
+
+<body>
+
+<div class="container">
+
+	<h3>Dynamic form</h3>
+	
+	<div class="row">
+		
+		<div class="col-md-6"> 
+			<div id="dynamic-form"></div>
+						
+			<div class="btn-group">
+				<button type="button" onclick="submit()">Submit</button>
+			</div>
+		
+		</div>
+		
+		<div class="col-md-6">
+			<div class="card">
+				<div class="card-body">
+					<div class="form-group has-error">
+						<label> First Name</label>
+						<input type="text" class="form-control is-invalid" />
+					</div>
+					
+					<div class="form-group">
+						<label> Last Name</label>
+						<input type="text" class="form-control" />
+					</div>
+					
+					<div class="form-group form-check">
+					  <label class="form-check-label">
+						<input class="form-check-input" type="checkbox" name="remember"> Remember me
+					  </label>
+					</div>
+
+					<div class="form-group">
+						<select name="role" class="form-control">
+							<option value="1">User</option>
+							<option value="2">Admin</option>
+							<option value="3">Super admin</option>
+						</select>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+
+var listItems = [
+	{ value: "", text: ""},
+	{ value: 1, text: "User"},
+	{ value: 2, text: "Admin"},
+	{ value: 3, text: "Super Admin"},
+]
+
+
+var dynamicForm = {
+	forms: [
+	{
+		title: "User",
+		formGroups: [
+		{
+			label: "First name",
+			formControl: {
+				id: 1,
+				type: "text",
+				name: "firstName",
+				value: "Daniel",
+				isRequired: true,
+			}
+		
+		},
+		{
+			label: "Last name", 
+			formControl: {
+				id: 1,
+				type: "text",
+				name: "lastName",
+				isRequired: true,
+			}
+		
+		}]
+	},
+	{
+		title: "Detail",
+		formGroups: [
+		{
+			label: "Country",
+			formControl: {
+				id: 1,
+				type: "text",
+				name: "country",
+				isRequired: true
+			}
+		
+		},
+		{
+			label: "City",
+			formControl: {
+				id: 2,
+				type: "text",
+				name: "city",
+				isRequired: false,
+			}
+		},
+		{
+			label: "Address",
+			formControl: {
+				id: 3,
+				type: "text",
+				name: "address",
+				isRequired: true
+			}
+		
+		},
+		{	
+			label: "Zip code",
+			formControl: {
+				id: 4,
+				type: "text",
+				name: "zipCode",
+				isRequired: true,
+			}
+		},	
+		{
+			label: "Password",
+			formControl: {
+				id: 5,
+				type: "password",
+				name: "password",
+				isRequired: true
+			}
+		},
+		{
+			label: "Remember me",
+			formControl: {
+				id: 6,
+				type: "checkbox",
+				name: "isRemember",
+				value: "true",
+				isRequired: true
+			}
+		},
+		{
+			label: "Role",
+			formControl: {
+				id: 7,
+				type: "dropdown",
+				name: "roleId",
+				value: listItems,
+				isRequired: true
+			}
+		}]
+	}]
+}
+
+window.onload = function(){
+	onInit();
+};
+	  
+//On page load.  
+function onInit() {
+	initDynamicForm();
+}
+	
+function initDynamicForm() {
+	var dynamicFormElement = document.getElementById("dynamic-form");
+	
+	dynamicForm.forms.forEach((form, index) => {
+		
+		//Card
+		var card = document.createElement("div");
+		card.setAttribute("class", "card mb-3");
+		
+		var cardBody = document.createElement("div");
+		cardBody.setAttribute("class", "card-body");
+		
+		//Title
+		var title = document.createElement("h3");
+		title.append(form.title);
+		cardBody.appendChild(title);
+
+
+		form.formGroups.forEach(function(formGroup, index) {
+		
+			var formGroupElement = document.createElement("div");
+			
+			var formControl = formGroup.formControl;
+
+			if(formControl.type === "text" || formControl.type === "password") {;
+				formGroupElement = setFormGroup(formGroup, "input");
+			}
+		
+			if(formControl.type === "checkbox") {
+				formGroupElement.setAttribute("class", "form-group form-check");
+				
+				var labelElement = document.createElement("label");
+				labelElement.setAttribute("class", "form-check-label");
+				
+				var inputElement = document.createElement("input");
+				inputElement.setAttribute("class", "form-check-input");
+				inputElement.setAttribute("type", formControl.type);
+				inputElement.setAttribute("name", formControl.name);
+
+				if(!isEmpty(formControl.value)) {
+					inputElement.checked = formControl.value;
+				}
+
+				if(formControl.isRequired) inputElement.setAttribute("required", "");
+				
+				labelElement.appendChild(inputElement);
+				
+				labelElement.append(formGroup.label);
+				
+				formGroupElement.appendChild(labelElement);
+			}
+
+			if(formControl.type === "dropdown") {
+				formGroupElement = setFormGroup(formGroup, "select");
+			}
+			
+			cardBody.appendChild(formGroupElement);
+		});
+		
+		card.appendChild(cardBody);
+	
+		dynamicFormElement.appendChild(card);
+	});
+	
+}
+
+function setFormGroup(formGroup, elementType) {
+	var formGroupElement = document.createElement("div");
+
+	formGroupElement.setAttribute("class", "form-group");
+
+	var labelElement = createFormGroupLabel(formGroup)
+	formGroupElement.appendChild(labelElement);
+
+	var formControlElement = createFormControlElement(formGroup.formControl, elementType)
+
+	if(!isEmpty(formGroup.formControl.value)) {
+
+		//Dropdown
+		if(Array.isArray(formGroup.formControl.value)) {
+			formGroup.formControl.value.forEach((listItem, index) => {
+					var option = document.createElement("option");
+					option.append(listItem.text);
+					option.value = listItem.value;
+
+					formControlElement.appendChild(option);
+				});
+		} else {
+			//Text
+			formControlElement.value = formGroup.formControl.value;
+		}
+	}
+
+	if(formGroup.formControl.isRequired) formControlElement.setAttribute("required", "");
+
+	formGroupElement.appendChild(formControlElement);
+
+	return formGroupElement;
+}
+
+function submit() {
+
+	if(!isValid("dynamic-form")) {
+		alert("Form not valid");
+		return;
+	}
+
+	var obj = getFormValue("dynamic-form");
+	console.log(obj);
+	alert("Form valid");
+}
+
+function getFormValue(elementId) {
+	var obj = new Object();
+	var form = document.getElementById(elementId);
+	var inputElements = form.querySelectorAll("[name]");
+	inputElements.forEach(function(input, index) {
+		var name = input.name;
+		obj[name] = input.value;
+	
+	});
+	
+	return obj;
+	
+}
+
+function isValid(elementId) {
+	var isValid = true;
+
+	var form = document.getElementById(elementId);
+	var inputElements = form.querySelectorAll("[name]");
+	inputElements.forEach((input, index) => {
+		if(!input.required) return;
+	
+		switch (input.type) {
+			case "checkbox":
+				var parent = input.parentNode;
+				parent.setAttribute("class", "form-check-label");
+				if(input.checked) return;
+				isValid = false;
+				parent.setAttribute("class", "form-check-label is-invalid-check");
+				break;
+			case "select-one": // dropdown singel select
+				isValid = isInputValid(input);
+				break;
+			default:
+				isValid = isInputValid(input);
+				break;
+		}
+	});
+	
+	return isValid;
+}
+	
+function isEmpty(value) {
+	return value === undefined || value === null || value === "";
+}
+
+function isInputValid(input) {
+	input.setAttribute("class", "form-control");
+
+	if(isEmpty(input.value)) {
+		setInvalid(input)
+		return false;
+	} 
+	
+	return true;
+}
+
+function setInvalid(input) {
+	input.setAttribute("class", "form-control is-invalid");
+}
+
+function createFormControlElement(formControl, elementType) {
+	var formControlElement = document.createElement(elementType);
+	formControlElement.setAttribute("class", "form-control");
+	formControlElement.setAttribute("type", formControl.type); 
+	formControlElement.setAttribute("name", formControl.name);
+
+	return formControlElement;
+}
+
+function createFormGroupLabel(formGroup) {
+	var labelElement = document.createElement("label");
+	labelElement.append(formGroup.label);
+
+	return labelElement;
+}
+	
+</script>
+
+</body>
+</html>
+
+
+
